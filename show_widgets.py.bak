@@ -1,0 +1,48 @@
+# -*- coding: utf-8 -*- #
+# ------------------------------------------------------------------
+# File Name:        
+# Author: xurongxin
+# Version:          
+# Created:          
+# Description:  
+# Function List:    
+# History:
+#       <author>        <version>       <time>      <desc>
+# ------------------------------------------------------------------
+from PyQt5.QtWidgets import QPushButton, QWidget, QApplication, QGraphicsScene, QGraphicsPixmapItem, QVBoxLayout
+from PyQt5.QtGui import  QImage, QPixmap
+from PyQt5 import QtCore
+from video_widget import Ui_Form
+
+
+class Video_scene(QGraphicsScene):
+    def __init__(self):
+        super().__init__()
+        self.rects = []
+        self.onClick = 0
+
+class Video_widget(QWidget, Ui_Form):
+    def __init__(self, title, w, h, position, parent=None):
+        super(QWidget, self).__init__(parent)
+        self.setupUi(self) 
+
+        self.resize(w, h)
+        self.move(position[0], position[1])
+        self.setWindowTitle(title)
+        self.setFixedSize(self.width(), self.height())
+        self.graphicsView.setGeometry(QtCore.QRect(-1, -1, self.width(), self.height()))
+
+        self.scene = Video_scene()
+        self.graphicsView.setScene(self.scene)
+        self.scene.clear()
+        self.img_item = QGraphicsPixmapItem()
+        self.scene.addItem(self.img_item)
+    
+    def add_image(self, RGB):
+        h, w, c = RGB.shape
+        bytesPerLine = 3 * w
+        self.img = QImage(RGB.data, w, h, bytesPerLine, QImage.Format_RGB888)
+        self.pix = QPixmap(self.img).scaled(self.graphicsView.size())
+        self.img_item.setPixmap(self.pix)
+        QApplication.processEvents() ### !!!!
+        #print("add_image")
