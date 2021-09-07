@@ -48,6 +48,21 @@ class ZoomVideo_widget(QWidget):
         self.label = QLabel(self)
         self.label.setGeometry(QtCore.QRect(-1, -1, self.width(), self.height()))
 
+        self.text1 = QLabel(self)
+        self.text1.setGeometry(QtCore.QRect(5, 5, self.width() // 2, 10))
+        self.text1.setStyleSheet("color:gold")
+        self.text2 = QLabel(self)
+        self.text2.setGeometry(QtCore.QRect(self.width() // 2, 5, self.width() // 2, 10))
+        self.text2.setStyleSheet("color:gold")
+        self.text3 = QLabel(self)
+        self.text3.setGeometry(QtCore.QRect(5, self.height() - 15, self.width() // 2, 10))
+        self.text3.setStyleSheet("color:gold")
+        self.text4 = QLabel(self)
+        self.text4.setGeometry(QtCore.QRect(self.width() // 2, self.height() - 15, self.width() // 2, 10))
+        self.text4.setStyleSheet("color:gold")
+
+        self.label.lower()
+
     def add_image(self, BGR):
         h, w, c = BGR.shape
         bytesPerLine = 3 * w

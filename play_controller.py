@@ -54,7 +54,7 @@ class Window_controller():
         win_num = len(win_list)
         w, h = int(self.desk_w // 2), int(self.desk_h // 2)
         for i, win in enumerate(win_list):
-            wid = Video_widget(win, w, h, ((i // 2) * w, (i % 2) * h), self.main_win_obj)
+            wid = Video_widget(win, w, h, ((i % 2) * w, (i // 2) * h), self.main_win_obj)
             self.video_widgets[win] = wid
 
         self.video_win_w = w
@@ -136,8 +136,13 @@ class Play_Button_controller(Button_controller):
     def __init__(self, obj, win_obj) -> None:
         super(Play_Button_controller, self).__init__(obj)
         self.win_obj = win_obj
+
+        self.isplaying = False
         
     def clicked(self): # flag is processed in Play_thread
+        if not self.isplaying:
+            self.win_obj.player.start_play_thread()
+            self.isplaying = True
         if self.win_obj.player.ispause:
             self.win_obj.player.ispause = False
             self.win_obj.player.stop_flag = False
@@ -191,7 +196,8 @@ class Play_process():
         if win_ctrl is not None:
             self.win_ctrl = win_ctrl
         for win_name, cap in self.video_frm_dict.items():
-            self.win_ctrl.video_widgets[win_name].add_image(cap[idx])
+            id_tmp = min(len(cap) - 1, idx)
+            self.win_ctrl.video_widgets[win_name].add_image(cap[id_tmp])
     
     def show_zoom(self, idx):
         ### crop and merge !!!!!!!!!!!!!!!!!!!!!!
@@ -203,28 +209,46 @@ class Play_process():
         ### crop from video_frm_dict
         video_num = len(self.video_frm_dict.keys())
         caps = list(self.video_frm_dict.values())
+        keys = list(self.video_frm_dict.keys())
         try:
             x, y, w, h = self.zoom_rect
         except:
             return
         win_w, win_h = self.main_win.win_ctrl.video_win_w, self.main_win.win_ctrl.video_win_h
-        BGR_h, BGR_w, c = caps[0][idx].shape
+        BGR_h, BGR_w, c = caps[0][0].shape
         x, y, w, h = int(x / win_w * BGR_w), int(y / win_h * BGR_h), int(w / win_w * BGR_w), int(h / win_h * BGR_h)
 
         if video_num == 1:
+            id_tmp = min(len(caps[0]) - 1, idx)
             merge_crop = np.zeros((h, w, 3), dtype=np.uint8)
-            merge_crop = caps[0][idx][y:y + h, x:x + w, :]
+            merge_crop = caps[0][id_tmp][y:y + h, x:x + w, :]
+            zoom_win.text1.setText(keys[0])
+
         elif video_num == 2:
             merge_crop = np.zeros((h, w * 2, 3), dtype=np.uint8)
-            merge_crop[:, :w, :] = caps[0][idx][y:y + h, x:x + w, :]
-            merge_crop[:, w:, :] = caps[1][idx][y:y + h, x:x + w, :]
+            id_tmp = min(len(caps[0]) - 1, idx)
+            merge_crop[:, :w, :] = caps[0][id_tmp][y:y + h, x:x + w, :]
+            id_tmp = min(len(caps[1]) - 1, idx)
+            merge_crop[:, w:, :] = caps[1][id_tmp][y:y + h, x:x + w, :]
+
+            zoom_win.text1.setText(keys[0])
+            zoom_win.text2.setText(keys[1])
         else:
             merge_crop = np.zeros((h * 2, w * 2, 3), dtype=np.uint8)
-            merge_crop[:h, :w, :] = caps[0][idx][y:y + h, x:x + w, :]
-            merge_crop[:h, w:, :] = caps[1][idx][y:y + h, x:x + w, :]
-            merge_crop[h:, :w, :] = caps[2][idx][y:y + h, x:x + w, :]
+            id_tmp = min(len(caps[0]) - 1, idx)
+            merge_crop[:h, :w, :] = caps[0][id_tmp][y:y + h, x:x + w, :]
+            id_tmp = min(len(caps[1]) - 1, idx)
+            merge_crop[:h, w:, :] = caps[1][id_tmp][y:y + h, x:x + w, :]
+            id_tmp = min(len(caps[2]) - 1, idx)
+            merge_crop[h:, :w, :] = caps[2][id_tmp][y:y + h, x:x + w, :]
+            zoom_win.text1.setText(keys[0])
+            zoom_win.text2.setText(keys[1])
+            zoom_win.text3.setText(keys[2])
+
             try:
-                merge_crop[h:, w:, :] = caps[3][idx][y:y + h, x:x + w, :]
+                id_tmp = min(len(caps[3]) - 1, idx)
+                merge_crop[h:, w:, :] = caps[3][id_tmp][y:y + h, x:x + w, :]
+                zoom_win.text4.setText(keys[3])
             except:
                 pass
 
@@ -236,6 +260,7 @@ class Play_process():
         lt_y = (h_label - crop_h) // 2
         lt_x = (w_label - crop_w) // 2
         merge_img[lt_y:lt_y + crop_h, lt_x:lt_x + crop_w, :] = merge_crop
+
         zoom_win.add_image(merge_img)
         # for win_name, cap in self.video_frm_dict.items():
         #     self.win_ctrl.video_widgets[win_name].add_image(cap[idx])

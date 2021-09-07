@@ -55,7 +55,7 @@ class MyMainWindow(QWidget, Ui_Form):
         self.next_button_ctrl = Next_Button_controller(self.pushButton_5, self)
         self.stop_button_ctrl = Stop_Button_controller(self.pushButton_3, self)
 
-        self.isplaying = False
+        # self.isplaying = False
 
     def main_win_style(self):
         desktop = QApplication.desktop().screenGeometry(0)
@@ -95,9 +95,9 @@ class MyMainWindow(QWidget, Ui_Form):
         # for play processing
         self.player.load_frm(self.video_caps_dict)
         self.player.show(self.win_ctrl)
-        if not self.isplaying:
-            self.player.start_play_thread()
-            self.isplaying = True
+        # if not self.isplaying:
+        #     self.player.start_play_thread()
+        #     self.isplaying = True
         ### show
 
     def restart(self):
